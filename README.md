@@ -4,6 +4,12 @@ This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
 If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
 
+## Running the application in Docker
+
+```shell script
+docker run --rm -p 8000:8080 -d tonanuvem/chat-rest-websocket
+```
+
 ## Running the application in dev mode
 
 You can run your application in dev mode that enables live coding using:
