@@ -1,0 +1,116 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>FIAP Quarkus Chat!</title>
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <style>
+        #chat {
+          resize: none;
+          overflow: auto;
+          min-height: 300px;
+          max-height: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="nav-wrapper"> <a href="" class="brand-logo"> <i class="material-icons">chat</i>
+          FIAP Microservices Chat using Java Quarkus! </a>
+        <ul id="nav-mobile" class="right hide-on-med-and-down">
+          <li><i id="iconestatus" class="material-icons">filter_drama</i></li>
+          <li><a id="status" href="#name">Não conectado</a></li>
+          <li><a href="#chat">contador de eventos: <span id="mensagens" class="new badge" data-badge-caption="novas mensagens">0</span></a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="container"> <br>
+      <div class="row"> <input id="name" class="col-md-4" placeholder="defina seu nome"
+          type="text">
+        <button id="connect" class="col-md-1 btn btn-primary" type="button">
+          Conectar<i class="material-icons right">cloud</i> </button> <br>
+        <br>
+      </div>
+      <div class="row"> <textarea class="col-md-8" id="chat">            </textarea>
+      </div>
+      <div class="row"> <input class="col-md-6" id="msg" placeholder="digite sua messagem"
+          type="text">
+        <button class="col-md-1 btn btn-primary" id="send" type="button" disabled="disabled">
+          Enviar<i class="material-icons right">send</i> </button> </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/patternfly/3.24.0/js/patternfly.min.js"></script>
+    <script type="text/javascript">
+      var connected = false;
+      var socket;
+
+      $( document ).ready(function() {
+          $("#connect").click(connect);
+          $("#send").click(sendMessage);
+
+          $("#name").keypress(function(event){
+              if(event.keyCode == 13 || event.which == 13) {
+                  connect();
+              }
+          });
+
+          $("#msg").keypress(function(event) {
+              if(event.keyCode == 13 || event.which == 13) {
+                  sendMessage();
+              }
+          });
+
+        $("#chat").change(function() {
+            scrollToBottom();
+          });
+
+          $("#name").focus();
+      });
+
+      var connect = function() {
+          if (! connected) {
+              var name = $("#name").val();
+              console.log("Val: " + name);
+              socket = new WebSocket("ws://" + location.host + "/chat/" + name);
+              socket.onopen = function() {
+                  connected = true;
+                  console.log("Connected to the web socket");
+                  $("#send").attr("disabled", false);
+                  $("#connect").attr("disabled", true);
+                  $("#name").attr("disabled", true);
+                  $("#status").text("CONECTADO");
+                  $("#iconestatus").text("cloud_done");
+                  $("#msg").focus();
+              };
+              socket.onmessage =function(m) {
+                  console.log("Got message: " + m.data);
+                  $("#chat").append(m.data + "\n");
+                  $("#mensagens").text( parseInt($("#mensagens").text()) + 1 );
+                  scrollToBottom();
+              };
+          }
+      };
+
+      var sendMessage = function() {
+          if (connected) {
+              var value = $("#msg").val();
+              console.log("Sending " + value);
+              socket.send(value);
+              $("#msg").val("");
+          }
+      };
+
+      var scrollToBottom = function () {
+        $('#chat').scrollTop($('#chat')[0].scrollHeight);
+      };
+
+    </script>
+  </body>
+</html>
